@@ -1,0 +1,96 @@
+version: '3.8'
+
+# Production configuration - use with: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+services:
+  postgres:
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  redis:
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --appendfsync everysec
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  api-gateway:
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+    restart: always
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  langgraph-orchestrator:
+    restart: always
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  autogen-agents:
+    restart: always
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  code-generation:
+    restart: always
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  testing-service:
+    restart: always
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  database-service:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  nginx:
+    restart: always
+    environment:
+      ENVIRONMENT: production
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    profiles: []  # Always start in production
+
